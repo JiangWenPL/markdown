@@ -19,9 +19,11 @@ public class MDServer extends Thread implements Runnable {
     private Socket socket;
     private ObjectInputStream objectInputStream;
     long lastTimeStamp;
+    boolean isServer;
 
-    public MDServer(Socket socket, MDStrManager mdStrManager) {
+    public MDServer(Socket socket, MDStrManager mdStrManager, boolean isServer) {
         lastTimeStamp = -1;
+        this.isServer = isServer;
         this.mdStrManager = mdStrManager;
         this.socket = socket;
         try {
@@ -40,7 +42,9 @@ public class MDServer extends Thread implements Runnable {
                 if (mdMessage.time > this.lastTimeStamp) {
                     this.lastTimeStamp = mdMessage.time;
                     synchronized (this.mdStrManager) {
-                        this.mdStrManager.mergeMdStr(mdMessage.text);
+                        if (this.isServer)
+                            this.mdStrManager.mergeMdStr(mdMessage.text);
+                        else this.mdStrManager.setMdStr(mdMessage.text);
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {

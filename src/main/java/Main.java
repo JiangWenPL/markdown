@@ -36,7 +36,7 @@ class ServerAccepter extends Thread implements Runnable {
         try {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                MDServer mdServer = new MDServer(clientSocket, mdStrManager);
+                MDServer mdServer = new MDServer(clientSocket, mdStrManager, true);
                 MDClient mdClient = new MDClient(clientSocket, mdStrManager);
                 clientSocketList.add(clientSocket);
                 threadPool.submit(mdServer);
@@ -169,7 +169,7 @@ class MarkdownEditor extends JFrame {
                 Socket socket = new Socket(ip, Integer.parseInt(port));
                 MDClient mdClient = new MDClient(socket, mdStrManager);
                 mdClient.start();
-                MDServer mdServer = new MDServer(socket, mdStrManager);
+                MDServer mdServer = new MDServer(socket, mdStrManager, false);
                 mdServer.start();
             } catch (IOException e1) {
                 e1.printStackTrace();
