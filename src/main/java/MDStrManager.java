@@ -48,10 +48,12 @@ public class MDStrManager {
     private HtmlRenderer renderer;
     private HtmlRenderer outlineRender;
     private boolean isDirty;
+    private boolean needUpdateNow;
     private diff_match_patch merger;
     public long lastModifiedTime;
 
     public MDStrManager() {
+        needUpdateNow = false;
         parser = Parser.builder().build();
         renderer = HtmlRenderer.builder().build();
         isDirty = false;
@@ -102,7 +104,15 @@ public class MDStrManager {
 
     public void done() {
         isDirty = false;
+        needUpdateNow = false;
     }
 
+    public void needUpdateNow() {
+        this.needUpdateNow = true;
+    }
+
+    public boolean isNeedUpdateNow() {
+        return this.needUpdateNow;
+    }
 
 }

@@ -97,15 +97,20 @@ class MarkdownEditor extends JFrame {
             System.out.println("Weak up");
             synchronized (mdStrManager) {
                 System.out.println("Check is dirty:" + mdStrManager.isDirty());
-                if (mdStrManager.isDirty()) {
+                if (mdStrManager.isNeedUpdateNow() || (mdStrManager.isDirty() && System.currentTimeMillis() - mdStrManager.lastModifiedTime > 1000)) {
                     System.out.println("Updating content");
-                    mdStrManager.notifyAll();
                     mdStrManager.lastModifiedTime = System.currentTimeMillis();
+                    previewPane.setText(mdStrManager.getHtmlStr());
+                    outlinePane.setText(mdStrManager.getOutlineStr());
+                    editPane.setText(mdStrManager.getMdStr());
+
+                    if (!mdStrManager.isNeedUpdateNow())
+                        mdStrManager.notifyAll();
+
+                    mdStrManager.done();
+
                 }
-                mdStrManager.done();
-                previewPane.setText(mdStrManager.getHtmlStr());
-                outlinePane.setText(mdStrManager.getOutlineStr());
-                editPane.setText(mdStrManager.getMdStr());
+
             }
         });
         timer.setRepeats(true);

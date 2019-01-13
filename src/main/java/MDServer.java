@@ -42,11 +42,11 @@ public class MDServer extends Thread implements Runnable {
                 if (mdMessage.time > this.lastTimeStamp) {
                     this.lastTimeStamp = mdMessage.time;
                     synchronized (this.mdStrManager) {
-                        if (this.isServer)
+                        if (this.isServer) {
                             this.mdStrManager.mergeMdStr(mdMessage.text);
-                        else {
+                        } else {
                             this.mdStrManager.setMdStr(mdMessage.text);
-                            this.mdStrManager.done();
+                            this.mdStrManager.needUpdateNow();
                         }
                     }
                 }
