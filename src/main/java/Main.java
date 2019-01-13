@@ -1,10 +1,15 @@
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 class MarkdownEditor extends JFrame {
     String readFile(String fileName) throws IOException {
@@ -29,7 +34,7 @@ class MarkdownEditor extends JFrame {
         JEditorPane editPane = new JEditorPane("text/plain", "");
         MDStrManager mdStrManager = new MDStrManager();
         final Timer timer = new Timer(1000, e1 -> {
-            System.out.println("No update in 1000ms");
+//            System.out.println("No update in 1000ms");
             //TODO: send message to peers.
         });
         timer.setRepeats(true);
@@ -42,7 +47,7 @@ class MarkdownEditor extends JFrame {
             public void insertUpdate(DocumentEvent e) {
                 try {
                     mdStrManager.setMdStr(e.getDocument().getText(0, e.getDocument().getLength()));
-                    System.out.println(e.getDocument().getText(0, e.getDocument().getLength()));
+//                    System.out.println(e.getDocument().getText(0, e.getDocument().getLength()));
                     previewPane.setText(mdStrManager.getHtmlStr());
                     outlinePane.setText(mdStrManager.getOutlineStr());
                 } catch (BadLocationException e1) {
@@ -55,7 +60,7 @@ class MarkdownEditor extends JFrame {
             public void removeUpdate(DocumentEvent e) {
                 try {
                     mdStrManager.setMdStr(e.getDocument().getText(0, e.getDocument().getLength()));
-                    System.out.println(e.getDocument().getText(0, e.getDocument().getLength()));
+//                    System.out.println(e.getDocument().getText(0, e.getDocument().getLength()));
                     previewPane.setText(mdStrManager.getHtmlStr());
                     outlinePane.setText(mdStrManager.getOutlineStr());
                 } catch (BadLocationException e1) {
