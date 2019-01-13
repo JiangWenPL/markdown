@@ -1,11 +1,13 @@
-import org.commonmark.internal.HeadingParser;
-import org.commonmark.node.*;
+import name.fraser.neil.plaintext.diff_match_patch;
+import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.Heading;
+import org.commonmark.node.Node;
+import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.html.HtmlWriter;
+
+import java.util.LinkedList;
 
 class HeadingVisitor extends AbstractVisitor {
 
@@ -20,7 +22,6 @@ class HeadingVisitor extends AbstractVisitor {
 
     @Override
     public void visit(Text text) {
-        System.out.println(text.getLiteral() + "###" + stringBuilder.toString());
         if (text.getParent().getClass().equals(Heading.class)) {
             Heading heading = (Heading) text.getParent();
             String htag = "h" + heading.getLevel();
@@ -29,9 +30,7 @@ class HeadingVisitor extends AbstractVisitor {
             this.html.text(text.getLiteral());
             this.html.tag('/' + htag);
             this.html.line();
-
         }
-
     }
 
     @Override
@@ -49,11 +48,13 @@ public class MDStrManager {
     private HtmlRenderer renderer;
     private HtmlRenderer outlineRender;
     private boolean isDirty;
+    private diff_match_patch merger;
 
     public MDStrManager() {
         parser = Parser.builder().build();
         renderer = HtmlRenderer.builder().build();
         isDirty = false;
+        merger = new diff_match_patch();
     }
 
     public void setMdStr(String newStr) {
@@ -64,8 +65,13 @@ public class MDStrManager {
         HeadingVisitor headingVisitor = new HeadingVisitor();
         document.accept(headingVisitor);
         outlineStr = headingVisitor.toString();
-        System.out.println(outlineStr);
-        System.out.println("===================");
+    }
+
+    public void mergeMdStr(String remoteStr) {
+        LinkedList<diff_match_patch.Patch> patches = merger.patch_make(this.mdStr, remoteStr);
+        Object object[] = merger.patch_apply(patches, this.mdStr);
+        String mergedText = (String) object[0];
+        this.setMdStr(mergedText);
     }
 
     public String getMdStr() {
