@@ -1,3 +1,4 @@
+import org.commonmark.internal.HeadingParser;
 import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
@@ -14,30 +15,42 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-class HeadingNodeRenderer implements NodeRenderer {
+class HeadingVisitor extends AbstractVisitor {
 
     private final HtmlWriter html;
+    StringBuilder stringBuilder;
 
-    HeadingNodeRenderer(HtmlNodeRendererContext context) {
-        this.html = context.getWriter();
+    HeadingVisitor() {
+        stringBuilder = new StringBuilder();
+        this.html = new HtmlWriter(stringBuilder);
     }
 
     @Override
-    public Set<Class<? extends Node>> getNodeTypes() {
-        return new HashSet(Arrays.asList(Document.class, Heading.class, Paragraph.class, BlockQuote.class, BulletList.class, FencedCodeBlock.class, HtmlBlock.class, ThematicBreak.class, IndentedCodeBlock.class, Link.class, ListItem.class, OrderedList.class, Image.class, Emphasis.class, StrongEmphasis.class, Text.class, Code.class, HtmlInline.class, SoftLineBreak.class, HardLineBreak.class));
+    public void visit(Heading heading) {
+        super.visit(heading);
+        String htag = "h" + heading.getLevel();
+        this.html.line();
+        this.html.tag(htag);
+        this.visitChildren(heading);
+        this.html.tag('/' + htag);
+        this.html.line();
     }
 
     @Override
-    public void render(Node node) {
-        // We only handle one type as per getNodeTypes, so we can just cast it here.
-        System.out.println(node.getClass() + " VS " + Heading.class);
-        if (node.getClass().equals(Heading.class)) {
-            Heading heading = (Heading) node;
-            html.line();
-            html.tag("h" + heading.getLevel());
-            html.tag("/h" + heading.getLevel());
-            html.line();
-        }
+    public void visit(Text text) {
+        // This is called for all Text nodes. Override other visit methods for other node types.
+
+        // Count words (this is just an example, don't actually do it this way for various reasons).
+        System.out.println(text.getLiteral()+"###"+stringBuilder.toString());
+        if (text.getParent().getClass().equals(Heading.class))
+            this.html.text(text.getLiteral());
+        // Descend into children (could be omitted in this case because Text nodes don't have children).
+//        visitChildren(text);
+    }
+
+    @Override
+    public String toString() {
+        return this.stringBuilder.toString();
     }
 }
 
@@ -54,9 +67,6 @@ public class MDStrManager {
     public MDStrManager() {
         parser = Parser.builder().build();
         renderer = HtmlRenderer.builder().build();
-        outlineRender = HtmlRenderer.builder()
-                .nodeRendererFactory(HeadingNodeRenderer::new)
-                .build();
         isDirty = false;
     }
 
@@ -65,7 +75,11 @@ public class MDStrManager {
         mdStr = newStr;
         Node document = parser.parse(mdStr);
         htmlStr = renderer.render(document);
-        outlineStr = outlineRender.render(document);
+        HeadingVisitor headingVisitor = new HeadingVisitor();
+        document.accept(headingVisitor);
+        outlineStr = headingVisitor.toString();
+        System.out.println(outlineStr);
+        System.out.println("===================");
     }
 
     public String getMdStr() {
