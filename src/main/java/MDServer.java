@@ -44,7 +44,10 @@ public class MDServer extends Thread implements Runnable {
                     synchronized (this.mdStrManager) {
                         if (this.isServer)
                             this.mdStrManager.mergeMdStr(mdMessage.text);
-                        else this.mdStrManager.setMdStr(mdMessage.text);
+                        else {
+                            this.mdStrManager.setMdStr(mdMessage.text);
+                            this.mdStrManager.done();
+                        }
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {

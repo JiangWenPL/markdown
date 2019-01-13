@@ -72,8 +72,13 @@ public class MDStrManager {
 
     public void mergeMdStr(String remoteStr) {
         LinkedList<diff_match_patch.Patch> patches = merger.patch_make(this.mdStr, remoteStr);
+        if (this.mdStr == null)
+            this.mdStr = "";
+        if (remoteStr == null)
+            remoteStr = "";
+        String mergedText;
         Object object[] = merger.patch_apply(patches, this.mdStr);
-        String mergedText = (String) object[0];
+        mergedText = (String) object[0];
         System.out.println("Merge done: " + this.mdStr + " VS " + remoteStr + " -> " + mergedText);
         this.setMdStr(mergedText);
     }

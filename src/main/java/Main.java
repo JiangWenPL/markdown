@@ -92,6 +92,24 @@ class MarkdownEditor extends JFrame {
         JEditorPane previewPane = new JEditorPane("text/html", "");
         previewPane.setEditable(false);
         JEditorPane outlinePane = new JEditorPane("text/html", "");
+        final Timer timer = new Timer(1500, e1 -> {
+//            System.out.println("No update in 1000ms");
+            System.out.println("Weak up");
+            synchronized (mdStrManager) {
+                System.out.println("Check is dirty:" + mdStrManager.isDirty());
+                if (mdStrManager.isDirty()) {
+                    System.out.println("Updating content");
+                    mdStrManager.notifyAll();
+                    mdStrManager.lastModifiedTime = System.currentTimeMillis();
+                }
+                mdStrManager.done();
+                previewPane.setText(mdStrManager.getHtmlStr());
+                outlinePane.setText(mdStrManager.getOutlineStr());
+                editPane.setText(mdStrManager.getMdStr());
+            }
+        });
+        timer.setRepeats(true);
+        timer.start();
         editPane.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -105,6 +123,7 @@ class MarkdownEditor extends JFrame {
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
+                timer.setDelay(1500);
             }
 
             @Override
@@ -119,6 +138,7 @@ class MarkdownEditor extends JFrame {
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
+                timer.setDelay(1500);
             }
 
             @Override
@@ -285,25 +305,6 @@ class MarkdownEditor extends JFrame {
                 System.exit(0);
             }
         });
-        final Timer timer = new Timer(1500, e1 -> {
-//            System.out.println("No update in 1000ms");
-            System.out.println("Weak up");
-            synchronized (mdStrManager) {
-                System.out.println("Check is dirty:" + mdStrManager.isDirty());
-                if (mdStrManager.isDirty()) {
-                    System.out.println("Updating content");
-                    mdStrManager.notifyAll();
-                    previewPane.setText(mdStrManager.getHtmlStr());
-                    outlinePane.setText(mdStrManager.getOutlineStr());
-                    editPane.setText(mdStrManager.getMdStr());
-                    mdStrManager.lastModifiedTime = System.currentTimeMillis();
-                }
-                mdStrManager.done();
-
-            }
-        });
-        timer.setRepeats(true);
-        timer.start();
 
         System.out.println("Socket closed");
         this.setVisible(true);
