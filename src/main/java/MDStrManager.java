@@ -49,12 +49,14 @@ public class MDStrManager {
     private HtmlRenderer outlineRender;
     private boolean isDirty;
     private diff_match_patch merger;
+    public long lastModifiedTime;
 
     public MDStrManager() {
         parser = Parser.builder().build();
         renderer = HtmlRenderer.builder().build();
         isDirty = false;
         merger = new diff_match_patch();
+        lastModifiedTime = System.currentTimeMillis();
     }
 
     public void setMdStr(String newStr) {
@@ -65,12 +67,14 @@ public class MDStrManager {
         HeadingVisitor headingVisitor = new HeadingVisitor();
         document.accept(headingVisitor);
         outlineStr = headingVisitor.toString();
+        lastModifiedTime = System.currentTimeMillis();
     }
 
     public void mergeMdStr(String remoteStr) {
         LinkedList<diff_match_patch.Patch> patches = merger.patch_make(this.mdStr, remoteStr);
         Object object[] = merger.patch_apply(patches, this.mdStr);
         String mergedText = (String) object[0];
+        System.out.println("Merge done: " + this.mdStr + " VS " + remoteStr + " -> " + mergedText);
         this.setMdStr(mergedText);
     }
 

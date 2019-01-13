@@ -2,7 +2,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class MDClient implements Runnable {
+public class MDClient extends Thread implements Runnable {
     private Socket socket;
     private final MDStrManager mdStrManager;
     private ObjectOutputStream objectOutputStream;
@@ -28,7 +28,7 @@ public class MDClient implements Runnable {
                     message = new MDMessage(this.mdStrManager.getMdStr());
                 }
                 this.objectOutputStream.writeObject(message);
-
+                System.out.println("Send: " + message.text);
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }

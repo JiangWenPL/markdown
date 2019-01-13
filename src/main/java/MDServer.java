@@ -13,7 +13,7 @@ class MDMessage implements Serializable {
     }
 }
 
-public class MDServer implements Runnable {
+public class MDServer extends Thread implements Runnable {
 
     private final MDStrManager mdStrManager;
     private Socket socket;
@@ -36,6 +36,7 @@ public class MDServer implements Runnable {
         while (!this.socket.isClosed()) {
             try {
                 MDMessage mdMessage = (MDMessage) this.objectInputStream.readObject();
+                System.out.println("get message: " + mdMessage.text);
                 if (mdMessage.time > this.lastTimeStamp) {
                     this.lastTimeStamp = mdMessage.time;
                     synchronized (this.mdStrManager) {

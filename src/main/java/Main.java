@@ -160,12 +160,17 @@ class MarkdownEditor extends JFrame {
                 JOptionPane.showMessageDialog(null, "Open socket fail, maybe change a port number", "Alert", JOptionPane.ERROR_MESSAGE);
             }
         });
+
         menuConnect.addActionListener(e -> {
             System.out.println("Connect action performed");
             String ip = JOptionPane.showInputDialog("please input server ip:");
             String port = JOptionPane.showInputDialog("Please input server port");
             try {
                 Socket socket = new Socket(ip, Integer.parseInt(port));
+                MDClient mdClient = new MDClient(socket, mdStrManager);
+                mdClient.start();
+                MDServer mdServer = new MDServer(socket, mdStrManager);
+                mdServer.start();
             } catch (IOException e1) {
                 e1.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Open socket fail, please check your port number", "Alert", JOptionPane.ERROR_MESSAGE);
@@ -280,8 +285,22 @@ class MarkdownEditor extends JFrame {
                 System.exit(0);
             }
         });
-        final Timer timer = new Timer(500, e1 -> {
+        final Timer timer = new Timer(1500, e1 -> {
 //            System.out.println("No update in 1000ms");
+            System.out.println("Weak up");
+            synchronized (mdStrManager) {
+                System.out.println("Check is dirty:" + mdStrManager.isDirty());
+                if (mdStrManager.isDirty()) {
+                    System.out.println("Updating content");
+                    mdStrManager.notifyAll();
+                    previewPane.setText(mdStrManager.getHtmlStr());
+                    outlinePane.setText(mdStrManager.getOutlineStr());
+                    editPane.setText(mdStrManager.getMdStr());
+                    mdStrManager.lastModifiedTime = System.currentTimeMillis();
+                }
+                mdStrManager.done();
+
+            }
         });
         timer.setRepeats(true);
         timer.start();
