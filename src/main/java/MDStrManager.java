@@ -7,14 +7,6 @@ import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.html.HtmlWriter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 class HeadingVisitor extends AbstractVisitor {
 
     private final HtmlWriter html;
@@ -25,27 +17,21 @@ class HeadingVisitor extends AbstractVisitor {
         this.html = new HtmlWriter(stringBuilder);
     }
 
-    @Override
-    public void visit(Heading heading) {
-        super.visit(heading);
-        String htag = "h" + heading.getLevel();
-        this.html.line();
-        this.html.tag(htag);
-        this.visitChildren(heading);
-        this.html.tag('/' + htag);
-        this.html.line();
-    }
 
     @Override
     public void visit(Text text) {
-        // This is called for all Text nodes. Override other visit methods for other node types.
-
-        // Count words (this is just an example, don't actually do it this way for various reasons).
-        System.out.println(text.getLiteral()+"###"+stringBuilder.toString());
-        if (text.getParent().getClass().equals(Heading.class))
+        System.out.println(text.getLiteral() + "###" + stringBuilder.toString());
+        if (text.getParent().getClass().equals(Heading.class)) {
+            Heading heading = (Heading) text.getParent();
+            String htag = "h" + heading.getLevel();
+            this.html.line();
+            this.html.tag(htag);
             this.html.text(text.getLiteral());
-        // Descend into children (could be omitted in this case because Text nodes don't have children).
-//        visitChildren(text);
+            this.html.tag('/' + htag);
+            this.html.line();
+
+        }
+
     }
 
     @Override
