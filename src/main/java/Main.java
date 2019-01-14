@@ -173,7 +173,7 @@ class MarkdownEditor extends JFrame {
                 socketController.serverSocket = new ServerSocket(Integer.parseInt(text));
                 serverAccepter.setServerSocket(socketController.serverSocket);
                 serverAccepter.start();
-            } catch (IOException e1) {
+            } catch (Exception e1) {
 //                e1.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Open socket fail, maybe change a port number", "Alert", JOptionPane.ERROR_MESSAGE);
             }
@@ -188,9 +188,9 @@ class MarkdownEditor extends JFrame {
                 mdClient.start();
                 MDServer mdServer = new MDServer(socketController.socket, mdStrManager, false);
                 mdServer.start();
-            } catch (IOException e1) {
+            } catch (Exception e1) {
 //                e1.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Open socket fail, please check your port number", "Alert", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Open socket fail, please check your ip and port number", "Alert", JOptionPane.ERROR_MESSAGE);
             }
         });
         menuStopConnect.addActionListener(e -> {
