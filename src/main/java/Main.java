@@ -55,14 +55,9 @@ class ServerAccepter extends Thread implements Runnable {
     }
 }
 
-class StateController {
-    public boolean isSharing;
-    public boolean isConnecting;
-
-    StateController() {
-        isSharing = false;
-        isConnecting = false;
-    }
+class SocketController {
+    public Socket socket;
+    public ServerSocket serverSocket;
 }
 
 class MarkdownEditor extends JFrame {
@@ -83,6 +78,7 @@ class MarkdownEditor extends JFrame {
         }
     }
 
+    static final int delay = 200;
 
     public MarkdownEditor() {
         super("Markdown editor");
@@ -92,9 +88,8 @@ class MarkdownEditor extends JFrame {
         JEditorPane previewPane = new JEditorPane("text/html", "");
         previewPane.setEditable(false);
         JEditorPane outlinePane = new JEditorPane("text/html", "");
-        final Timer timer = new Timer(1500, e1 -> {
-//            System.out.println("No update in 1000ms");
-            System.out.println("Weak up");
+        final Timer timer = new Timer(delay, e1 -> {
+            System.out.println("Weak up at: " + e1.getWhen());
             synchronized (mdStrManager) {
                 System.out.println("Check is dirty:" + mdStrManager.isDirty());
                 if (mdStrManager.isNeedUpdateNow() || (mdStrManager.isDirty() && System.currentTimeMillis() - mdStrManager.lastModifiedTime > 1000)) {
@@ -108,7 +103,6 @@ class MarkdownEditor extends JFrame {
                         mdStrManager.notifyAll();
 
                     mdStrManager.done();
-
                 }
 
             }
@@ -128,7 +122,7 @@ class MarkdownEditor extends JFrame {
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
-                timer.setDelay(1500);
+                timer.setDelay(delay);
             }
 
             @Override
@@ -143,7 +137,7 @@ class MarkdownEditor extends JFrame {
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
-                timer.setDelay(1500);
+                timer.setDelay(delay);
             }
 
             @Override
@@ -160,8 +154,6 @@ class MarkdownEditor extends JFrame {
         splitPane.setDividerLocation(.15f);
         mainPane.setDividerLocation(.5f);
 
-        final StateController stateController = new StateController();
-
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
         JMenuItem menuOpen = new JMenuItem("Open");
@@ -172,13 +164,14 @@ class MarkdownEditor extends JFrame {
         JMenuItem menuConnect = new JMenuItem("Connect");
         JMenuItem menuStopShare = new JMenuItem("Stop Share");
         JMenuItem menuStopConnect = new JMenuItem("Stop Connect");
+        SocketController socketController = new SocketController();
 
         menuShare.addActionListener(e -> {
             System.out.println("Share performed");
             String text = JOptionPane.showInputDialog("please input your port number:");
             try {
-                ServerSocket serverSocket = new ServerSocket(Integer.parseInt(text));
-                serverAccepter.setServerSocket(serverSocket);
+                socketController.serverSocket = new ServerSocket(Integer.parseInt(text));
+                serverAccepter.setServerSocket(socketController.serverSocket);
                 serverAccepter.start();
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -191,14 +184,42 @@ class MarkdownEditor extends JFrame {
             String ip = JOptionPane.showInputDialog("please input server ip:");
             String port = JOptionPane.showInputDialog("Please input server port");
             try {
-                Socket socket = new Socket(ip, Integer.parseInt(port));
-                MDClient mdClient = new MDClient(socket, mdStrManager);
+                socketController.socket = new Socket(ip, Integer.parseInt(port));
+                MDClient mdClient = new MDClient(socketController.socket, mdStrManager);
                 mdClient.start();
-                MDServer mdServer = new MDServer(socket, mdStrManager, false);
+                MDServer mdServer = new MDServer(socketController.socket, mdStrManager, false);
                 mdServer.start();
             } catch (IOException e1) {
                 e1.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Open socket fail, please check your port number", "Alert", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        menuStopConnect.addActionListener(e -> {
+            if (socketController.socket != null) {
+                if (socketController.socket.isClosed()) {
+                    JOptionPane.showMessageDialog(null, "Connection is already been closed.", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    try {
+                        socketController.socket.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    JOptionPane.showMessageDialog(null, "Stop connect success", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+        menuStopShare.addActionListener(e -> {
+            if (socketController.serverSocket != null) {
+                if (socketController.serverSocket.isClosed()) {
+                    JOptionPane.showMessageDialog(null, "Sharing is already been closed.", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    try {
+                        socketController.serverSocket.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    JOptionPane.showMessageDialog(null, "Stop Sharing success", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                }
             }
         });
         menuOpen.addActionListener(e -> {
@@ -301,6 +322,8 @@ class MarkdownEditor extends JFrame {
         menu.add(menuExport);
         menuRemote.add(menuShare);
         menuRemote.add(menuConnect);
+        menuRemote.add(menuStopShare);
+        menuRemote.add(menuStopConnect);
         menuBar.add(menu);
         menuBar.add(menuRemote);
         setJMenuBar(menuBar);
@@ -308,6 +331,16 @@ class MarkdownEditor extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
+
+                try {
+                    if (socketController.serverSocket != null && !socketController.serverSocket.isClosed())
+                        socketController.serverSocket.close();
+                    if (socketController.socket != null && !socketController.socket.isClosed())
+                        socketController.socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+
             }
         });
 
