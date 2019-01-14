@@ -39,7 +39,7 @@ public class MDServer extends Thread implements Runnable {
             try {
                 MDMessage mdMessage = (MDMessage) this.objectInputStream.readObject();
                 System.out.println("get message: " + mdMessage.text);
-                if (mdMessage.time > this.lastTimeStamp) {
+                if (mdMessage.time > this.lastTimeStamp && mdMessage.text != null) {
                     this.lastTimeStamp = mdMessage.time;
                     synchronized (this.mdStrManager) {
                         if (this.isServer) {

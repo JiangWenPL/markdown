@@ -20,11 +20,14 @@ public class MDClient extends Thread implements Runnable {
 
     @Override
     public void run() {
+        boolean isFirst = true;
         while (!this.socket.isClosed()) {
             try {
                 MDMessage message;
                 synchronized (this.mdStrManager) {
-                    this.mdStrManager.wait();
+                    if (!isFirst)
+                        this.mdStrManager.wait();
+                    isFirst = false;
                     message = new MDMessage(this.mdStrManager.getMdStr());
                 }
                 this.objectOutputStream.writeObject(message);
