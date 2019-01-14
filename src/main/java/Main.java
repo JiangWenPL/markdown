@@ -50,7 +50,7 @@ class ServerAccepter extends Thread implements Runnable {
                 }
             }
             threadPool.shutdownNow();
-            System.out.println("Server accepter closed");
+//            System.out.println("Server accepter closed");
         }
     }
 }
@@ -89,11 +89,11 @@ class MarkdownEditor extends JFrame {
         previewPane.setEditable(false);
         JEditorPane outlinePane = new JEditorPane("text/html", "");
         final Timer timer = new Timer(delay, e1 -> {
-            System.out.println("Weak up at: " + e1.getWhen());
+//            System.out.println("Weak up at: " + e1.getWhen());
             synchronized (mdStrManager) {
-                System.out.println("Check is dirty:" + mdStrManager.isDirty());
+//                System.out.println("Check is dirty:" + mdStrManager.isDirty());
                 if (mdStrManager.isNeedUpdateNow() || (mdStrManager.isDirty() && System.currentTimeMillis() - mdStrManager.lastModifiedTime > 1000)) {
-                    System.out.println("Updating content");
+//                    System.out.println("Updating content");
                     mdStrManager.lastModifiedTime = System.currentTimeMillis();
                     previewPane.setText(mdStrManager.getHtmlStr());
                     outlinePane.setText(mdStrManager.getOutlineStr());
@@ -120,7 +120,7 @@ class MarkdownEditor extends JFrame {
                         outlinePane.setText(mdStrManager.getOutlineStr());
                     }
                 } catch (BadLocationException e1) {
-                    e1.printStackTrace();
+//                    e1.printStackTrace();
                 }
                 timer.setDelay(delay);
             }
@@ -135,14 +135,14 @@ class MarkdownEditor extends JFrame {
                         outlinePane.setText(mdStrManager.getOutlineStr());
                     }
                 } catch (BadLocationException e1) {
-                    e1.printStackTrace();
+//                    e1.printStackTrace();
                 }
                 timer.setDelay(delay);
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                System.out.println("update:\n" + e);
+//                System.out.println("update:\n" + e);
             }
         });
         editPane.setEditable(true);
@@ -167,20 +167,19 @@ class MarkdownEditor extends JFrame {
         SocketController socketController = new SocketController();
 
         menuShare.addActionListener(e -> {
-            System.out.println("Share performed");
+//            System.out.println("Share performed");
             String text = JOptionPane.showInputDialog("please input your port number:");
             try {
                 socketController.serverSocket = new ServerSocket(Integer.parseInt(text));
                 serverAccepter.setServerSocket(socketController.serverSocket);
                 serverAccepter.start();
             } catch (IOException e1) {
-                e1.printStackTrace();
+//                e1.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Open socket fail, maybe change a port number", "Alert", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         menuConnect.addActionListener(e -> {
-            System.out.println("Connect action performed");
             String ip = JOptionPane.showInputDialog("please input server ip:");
             String port = JOptionPane.showInputDialog("Please input server port");
             try {
@@ -190,7 +189,7 @@ class MarkdownEditor extends JFrame {
                 MDServer mdServer = new MDServer(socketController.socket, mdStrManager, false);
                 mdServer.start();
             } catch (IOException e1) {
-                e1.printStackTrace();
+//                e1.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Open socket fail, please check your port number", "Alert", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -202,7 +201,7 @@ class MarkdownEditor extends JFrame {
                     try {
                         socketController.socket.close();
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+//                        e1.printStackTrace();
                     }
                     JOptionPane.showMessageDialog(null, "Stop connect success", "Alert", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -216,7 +215,7 @@ class MarkdownEditor extends JFrame {
                     try {
                         socketController.serverSocket.close();
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+//                        e1.printStackTrace();
                     }
                     JOptionPane.showMessageDialog(null, "Stop Sharing success", "Alert", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -247,7 +246,7 @@ class MarkdownEditor extends JFrame {
                 }
 
             } catch (Exception exception) {
-                exception.printStackTrace();
+//                exception.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Open file failed", "Alert", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -279,7 +278,7 @@ class MarkdownEditor extends JFrame {
                 }
                 fileWriter.close();
             } catch (IOException exception) {
-                exception.printStackTrace();
+//                exception.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Save failed!", "Alert", JOptionPane.ERROR_MESSAGE);
             }
             JOptionPane.showMessageDialog(null, "Save success!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -312,7 +311,7 @@ class MarkdownEditor extends JFrame {
                 }
                 fileWriter.close();
             } catch (IOException exception) {
-                exception.printStackTrace();
+//                exception.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Save failed!", "Alert", JOptionPane.ERROR_MESSAGE);
             }
             JOptionPane.showMessageDialog(null, "Save success!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -338,13 +337,12 @@ class MarkdownEditor extends JFrame {
                     if (socketController.socket != null && !socketController.socket.isClosed())
                         socketController.socket.close();
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+//                    e1.printStackTrace();
                 }
 
             }
         });
 
-        System.out.println("Socket closed");
         this.setVisible(true);
     }
 }

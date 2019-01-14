@@ -13,7 +13,7 @@ public class MDClient extends Thread implements Runnable {
         try {
             this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -31,9 +31,9 @@ public class MDClient extends Thread implements Runnable {
                     message = new MDMessage(this.mdStrManager.getMdStr());
                 }
                 this.objectOutputStream.writeObject(message);
-                System.out.println("Send: " + message.text);
+//                System.out.println("Send: " + message.text);
             } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }

@@ -81,7 +81,7 @@ public class MDStrManager {
         String mergedText;
         Object object[] = merger.patch_apply(patches, this.mdStr);
         mergedText = (String) object[0];
-        System.out.println("Merge done: " + this.mdStr + " VS " + remoteStr + " -> " + mergedText);
+//        System.out.println("Merge done: " + this.mdStr + " VS " + remoteStr + " -> " + mergedText);
         this.setMdStr(mergedText);
     }
 
